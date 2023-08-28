@@ -23,8 +23,12 @@ app.use(express.json());
 
 //get all notes
 app.get("/notes", async (req, res) => {
-  let { title, content} = req.query;
- 
+  let { title, content, page, pageSize } = req.query;
+  console.log(page, pageSize)
+  page = page ?? 1;
+  page = Math.max(1, page)
+  pageSize = Math.max(1, pageSize);
+  pageSize = pageSize ?? Note.countDocuments({});
   if (!title) {
     title = "";
   }
@@ -36,6 +40,8 @@ app.get("/notes", async (req, res) => {
     title: { $regex: title },
     content: { $regex: content },
   })
+    .skip((page - 1) * pageSize)
+    .limit(pageSize);
   res.status(200).json(notes);
 });
 
